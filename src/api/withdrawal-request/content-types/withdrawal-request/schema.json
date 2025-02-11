@@ -1,0 +1,57 @@
+{
+  "kind": "collectionType",
+  "collectionName": "withdrawal_requests",
+  "info": {
+    "singularName": "withdrawal-request",
+    "pluralName": "withdrawal-requests",
+    "displayName": "Withdrawal Request",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "amount": {
+      "type": "integer"
+    },
+    "currency": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::currency.currency"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ]
+    },
+    "remarks": {
+      "type": "string"
+    },
+    "admin": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "admin::user"
+    },
+    "requestedAt": {
+      "type": "datetime"
+    },
+    "channel": {
+      "type": "enumeration",
+      "enum": [
+        "paypal"
+      ]
+    },
+    "statusUpdatedAt": {
+      "type": "datetime"
+    }
+  }
+}

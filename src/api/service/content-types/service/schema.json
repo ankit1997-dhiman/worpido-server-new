@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "services",
+  "info": {
+    "singularName": "service",
+    "pluralName": "services",
+    "displayName": "Service",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "frontendLink": {
+      "type": "string",
+      "default": "#"
+    },
+    "isActive": {
+      "type": "boolean"
+    },
+    "subCategory": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sub-category.sub-category",
+      "inversedBy": "services"
+    },
+    "serviceAttributes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::service-attribute.service-attribute",
+      "mappedBy": "service"
+    }
+  }
+}

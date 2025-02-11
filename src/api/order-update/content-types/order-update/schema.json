@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "order_updates",
+  "info": {
+    "singularName": "order-update",
+    "pluralName": "order-updates",
+    "displayName": "Order Update",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "updateType": {
+      "type": "string"
+    },
+    "replyTo": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::order-update.order-update"
+    },
+    "order": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::order.order"
+    },
+    "sender": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "isSystemMessage": {
+      "type": "boolean"
+    },
+    "attachments": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "message": {
+      "type": "text"
+    },
+    "title": {
+      "type": "string"
+    }
+  }
+}

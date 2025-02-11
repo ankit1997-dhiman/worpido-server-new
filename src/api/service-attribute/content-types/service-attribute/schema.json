@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "service_attributes",
+  "info": {
+    "singularName": "service-attribute",
+    "pluralName": "service-attributes",
+    "displayName": "Service Attribute",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "frontendLink": {
+      "type": "string",
+      "default": "#"
+    },
+    "isActive": {
+      "type": "boolean"
+    },
+    "title": {
+      "type": "string"
+    },
+    "service": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::service.service",
+      "inversedBy": "serviceAttributes"
+    }
+  }
+}

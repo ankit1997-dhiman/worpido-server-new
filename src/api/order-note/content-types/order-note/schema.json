@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "order_notes",
+  "info": {
+    "singularName": "order-note",
+    "pluralName": "order-notes",
+    "displayName": "Order Note",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "note": {
+      "type": "string"
+    },
+    "order": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::order.order",
+      "inversedBy": "notes"
+    }
+  }
+}

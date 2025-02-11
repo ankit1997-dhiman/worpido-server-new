@@ -1,0 +1,21 @@
+{
+  "kind": "singleType",
+  "collectionName": "web_controls",
+  "info": {
+    "singularName": "web-control",
+    "pluralName": "web-controls",
+    "displayName": "Web Control",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "defaultCurrency": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::currency.currency"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "gig_views",
+  "info": {
+    "singularName": "gig-view",
+    "pluralName": "gig-views",
+    "displayName": "Gig View"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "gig": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::gig.gig"
+    },
+    "views": {
+      "type": "integer"
+    }
+  }
+}

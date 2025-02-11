@@ -1,0 +1,154 @@
+{
+  "kind": "collectionType",
+  "collectionName": "gigs",
+  "info": {
+    "singularName": "gig",
+    "pluralName": "gigs",
+    "displayName": "Gig",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "deliveryDays": {
+      "type": "integer"
+    },
+    "banners": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "overview": {
+      "type": "text"
+    },
+    "seller": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "gigs"
+    },
+    "orders": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order.order",
+      "mappedBy": "gig"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "active",
+        "processing",
+        "rejected",
+        "deleted",
+        "draft"
+      ],
+      "default": "processing"
+    },
+    "adminRemarks": {
+      "type": "string"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "attachments": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "category": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::category.category"
+    },
+    "minPrice": {
+      "type": "integer"
+    },
+    "revisions": {
+      "type": "string"
+    },
+    "subCategory": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::sub-category.sub-category"
+    },
+    "fixedPrice": {
+      "type": "integer"
+    },
+    "hourlyPrice": {
+      "type": "integer"
+    },
+    "pricingTable": {
+      "type": "json"
+    },
+    "faqs": {
+      "type": "json"
+    },
+    "pricingModel": {
+      "type": "enumeration",
+      "enum": [
+        "fixed",
+        "hourly",
+        "plans"
+      ]
+    },
+    "description": {
+      "type": "customField",
+      "options": {
+        "output": "HTML",
+        "preset": "standard"
+      },
+      "customField": "plugin::ckeditor.CKEditor"
+    },
+    "requirements": {
+      "type": "customField",
+      "options": {
+        "output": "HTML",
+        "preset": "standard"
+      },
+      "customField": "plugin::ckeditor.CKEditor"
+    },
+    "stripeProductId": {
+      "type": "string",
+      "unique": true
+    },
+    "views": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::gig-view.gig-view"
+    },
+    "maxPrice": {
+      "type": "integer"
+    },
+    "positiveReviews": {
+      "type": "integer"
+    },
+    "viewsCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "services": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::service.service"
+    }
+  }
+}

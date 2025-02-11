@@ -1,0 +1,44 @@
+{
+  "name": "workpido-server",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A Strapi application",
+  "scripts": {
+    "dev": "strapi develop",
+    "start": "strapi start",
+    "build": "strapi build",
+    "strapi": "strapi"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "@ckeditor/strapi-plugin-ckeditor": "^0.0.10",
+    "@strapi/plugin-i18n": "4.16.2",
+    "@strapi/plugin-users-permissions": "4.16.2",
+    "@strapi/provider-email-nodemailer": "^4.14.5",
+    "@strapi/provider-upload-aws-s3": "^4.15.0",
+    "@strapi/strapi": "4.16.2",
+    "@types/stripe": "^8.0.417",
+    "axios": "^1.6.0",
+    "pg": "^8.11.3",
+    "pg-connection-string": "^2.6.2",
+    "pusher": "^5.2.0",
+    "razorpay": "^2.9.2",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^5.2.0",
+    "stripe": "^14.2.0",
+    "styled-components": "^5.2.1",
+    "uuid": "^9.0.1"
+  },
+  "author": {
+    "name": "A Strapi developer"
+  },
+  "strapi": {
+    "uuid": "5b762eb2-e812-4be9-8d28-6bc2b921483c"
+  },
+  "engines": {
+    "node": ">=16.0.0 <=20.x.x",
+    "npm": ">=6.0.0"
+  },
+  "license": "MIT"
+}

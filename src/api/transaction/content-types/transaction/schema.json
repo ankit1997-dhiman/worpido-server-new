@@ -1,0 +1,78 @@
+{
+  "kind": "collectionType",
+  "collectionName": "transactions",
+  "info": {
+    "singularName": "transaction",
+    "pluralName": "transactions",
+    "displayName": "Transaction",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "transactionId": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "enumeration",
+      "enum": [
+        "paypal",
+        "razorpay",
+        "stripe"
+      ]
+    },
+    "currency": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::currency.currency"
+    },
+    "amount": {
+      "type": "integer"
+    },
+    "purpose": {
+      "type": "enumeration",
+      "enum": [
+        "withdrawal",
+        "order",
+        "refund"
+      ]
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "successful",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "admin": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "admin::user"
+    },
+    "beneficiary": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "remarks": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "withdrawalRequest": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::withdrawal-request.withdrawal-request"
+    },
+    "order": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::order.order"
+    }
+  }
+}

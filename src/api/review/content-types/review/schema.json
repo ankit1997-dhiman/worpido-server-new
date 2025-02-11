@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "reviews",
+  "info": {
+    "singularName": "review",
+    "pluralName": "reviews",
+    "displayName": "Review",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "gig": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::gig.gig"
+    },
+    "order": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::order.order"
+    },
+    "review": {
+      "type": "text"
+    },
+    "reviewResponse": {
+      "type": "text"
+    },
+    "rating": {
+      "type": "decimal",
+      "min": 0,
+      "max": 5
+    },
+    "reviewedBy": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "targetUser": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "qualities": {
+      "type": "json"
+    }
+  }
+}
