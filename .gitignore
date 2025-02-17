@@ -113,3 +113,13 @@ exports
 dist
 build
 .strapi-updater.json
+
+
+
+.editorconfig
+.env.example
+.eslintrc
+.strapi*
+.eslintignore
+yarn.lock
+jsconfig.json
