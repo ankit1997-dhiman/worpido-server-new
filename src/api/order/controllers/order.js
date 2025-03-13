@@ -1,22 +1,117 @@
 "use strict";
 
+const { log } = require("console");
 /**
  * order controller
  */
 const { FRONTEND_URL } = require("../../../../config/constants");
 const pusher = require("../../../../config/pusher");
+const crypto = require("crypto");
 // const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { createCoreController } = require("@strapi/strapi").factories;
 
 module.exports = createCoreController("api::order.order", ({ strapi }) => ({
+  // createOrder: async (ctx, next) => {
+  //   try {
+  //     const { provider, gigId, amount, description, metadata } =
+  //       ctx.request.body;
+  //     let res;
+  //     // let amount = 0;
+  //     let currency;
+
+  //     const gig = await strapi.entityService.findOne(
+  //       "api::gig.gig",
+  //       parseInt(gigId),
+  //       {
+  //         fields: [
+  //           "id",
+  //           "title",
+  //           "fixedPrice",
+  //           "hourlyPrice",
+  //           "pricingTable",
+  //           "pricingModel",
+  //         ],
+  //         populate: {
+  //           seller: {
+  //             populate: {
+  //               currency: {
+  //                 fields: ["isoCode"],
+  //               },
+  //             },
+  //           },
+  //         },
+  //       }
+  //     );
+
+  //     if (!gig?.id) {
+  //       return ctx.badRequest("Gig not found");
+  //     }
+
+  //     if (gig?.pricingModel == "hourly") {
+  //       return ctx.badRequest("Hourly pricing is not supported yet");
+  //     }
+
+  //     // Create chat room
+  //     try {
+  //       await strapi.service("api::chat-room.chat-room").createChatRoom({
+  //         senderId: ctx?.state?.user?.id,
+  //         receiverId: gig?.seller?.id,
+  //       });
+  //     } catch (error) {
+  //       console.log("Errrrrrrr");
+  //       console.log(error);
+  //     }
+
+  //     currency = gig?.seller?.currency?.isoCode;
+
+  //     // if (gig?.pricingModel == "fixed") {
+  //     //   amount = gig?.fixedPrice;
+  //     // }
+  //     // if(gig?.pricingModel == "plans"){
+  //     //   gig?.pricingTable?.hasOwnProperty("pricing")
+  //     // }
+
+  //     if (provider == "stripe") {
+  //       res = await strapi.service("api::order.order").getStripeLink({
+  //         amount: Number(amount) * 100,
+  //         currency: currency,
+  //         title: metadata?.title ?? "Workpido",
+  //         metadata: metadata,
+  //         gigId: gig?.id,
+  //       });
+  //     }
+  //     if (provider == "razorpay") {
+  //       res = await strapi.service("api::order.order").getRazorpayLink({
+  //         amount: amount,
+  //         currency: currency,
+  //         title: metadata?.title ?? "Workpido",
+  //       });
+  //     }
+  //     if (provider == "paypal") {
+  //       res = await strapi.service("api::order.order").getPaypalLink({
+  //         amount: amount,
+  //         currency: currency,
+  //         description: metadata?.title ?? "Workpido",
+  //       });
+  //     }
+
+  //     ctx.body = res;
+  //   } catch (error) {
+  //     ctx.internalServerError = error;
+  //   }
   createOrder: async (ctx, next) => {
     try {
       const { provider, gigId, amount, description, metadata } =
         ctx.request.body;
       let res;
-      // let amount = 0;
       let currency;
 
+      // Validate gigId
+      if (!gigId) {
+        return ctx.badRequest("Gig ID is required");
+      }
+
+      // Fetch gig details
       const gig = await strapi.entityService.findOne(
         "api::gig.gig",
         parseInt(gigId),
@@ -45,58 +140,191 @@ module.exports = createCoreController("api::order.order", ({ strapi }) => ({
         return ctx.badRequest("Gig not found");
       }
 
-      if (gig?.pricingModel == "hourly") {
+      if (gig?.pricingModel === "hourly") {
         return ctx.badRequest("Hourly pricing is not supported yet");
       }
 
-      // Create chat room
+      // Create chat room (if needed)
       try {
         await strapi.service("api::chat-room.chat-room").createChatRoom({
           senderId: ctx?.state?.user?.id,
           receiverId: gig?.seller?.id,
         });
       } catch (error) {
-        console.log("Errrrrrrr");
-        console.log(error);
+        console.error("Chat Room Creation Error:", error);
       }
 
-      currency = gig?.seller?.currency?.isoCode;
+      currency = gig?.seller?.currency?.isoCode || "INR"; // Default to INR if missing
 
-      // if (gig?.pricingModel == "fixed") {
-      //   amount = gig?.fixedPrice;
-      // }
-      // if(gig?.pricingModel == "plans"){
-      //   gig?.pricingTable?.hasOwnProperty("pricing")
-      // }
+      // Validate amount
+      if (!amount || isNaN(amount) || amount <= 0) {
+        return ctx.badRequest("Invalid amount");
+      }
 
-      if (provider == "stripe") {
+      // Payment provider logic
+      if (provider === "stripe") {
         res = await strapi.service("api::order.order").getStripeLink({
-          amount: Number(amount) * 100,
-          currency: currency,
+          amount: Number(amount) * 100, // Stripe requires amount in cents
+          currency,
           title: metadata?.title ?? "Workpido",
-          metadata: metadata,
+          metadata,
           gigId: gig?.id,
         });
-      }
-      if (provider == "razorpay") {
+      } else if (provider === "razorpay") {
         res = await strapi.service("api::order.order").getRazorpayLink({
-          amount: amount,
-          currency: currency,
+          amount: Number(amount), // Razorpay requires paise
+          currency,
           title: metadata?.title ?? "Workpido",
         });
-      }
-      if (provider == "paypal") {
+        console.log(res);
+      } else if (provider === "paypal") {
         res = await strapi.service("api::order.order").getPaypalLink({
-          amount: amount,
-          currency: currency,
+          amount: Number(amount), // PayPal uses normal currency format
+          currency,
           description: metadata?.title ?? "Workpido",
+        });
+      } else {
+        return ctx.badRequest("Invalid payment provider");
+      }
+
+      // Ensure response is valid before sending
+      if (!res) {
+        return ctx.internalServerError("Failed to generate payment link");
+      }
+
+      ctx.body = { success: true, payment_url: res };
+    } catch (error) {
+      console.error("Order Creation Error:", error);
+      ctx.internalServerError("Internal Server Error");
+    }
+  },
+  verifyRazorpayOrder: async (ctx, next) => {
+    console.log("hgjhgjhgjhgjh", ctx.request.body);
+
+    // ctx.body = { success: true };
+    try {
+      // Parse request body (Ensure Strapi is parsing it correctly)
+      const parsedBody = JSON.parse(ctx.request.body || "{}");
+
+      const {
+        orderId,
+        razorpayPaymentId,
+        razorpaySignature,
+        amount,
+        buyerId,
+        gigId,
+        sellerId,
+      } = parsedBody;
+      // const { orderId, razorpayPaymentId, razorpaySignature, amount, buyerId, gigId, sellerId } =
+      //   ctx.request.body;
+
+      console.log(
+        "Order details:",
+        orderId,
+        razorpayPaymentId,
+        razorpaySignature,
+        amount,
+        buyerId,
+        gigId,
+        sellerId
+      );
+
+      // Validate required fields
+      if (!orderId || !razorpayPaymentId || !razorpaySignature) {
+        return ctx.badRequest("Missing required fields.");
+      }
+
+      // Retrieve the Razorpay secret from environment variables
+      const keySecret = process.env.RAZORPAY_KEY_SECRET;
+      if (!keySecret) {
+        return ctx.internalServerError("Razorpay secret is not configured.");
+      }
+
+      // Generate the expected signature
+      const expectedSignature = crypto
+        .createHmac("sha256", keySecret)
+        .update(`${orderId}|${razorpayPaymentId}`)
+        .digest("hex");
+
+      // Compare the generated signature with the one provided in the request
+      if (expectedSignature !== razorpaySignature) {
+        return ctx.badRequest({
+          message: "Payment verification failed",
+          isOk: false,
         });
       }
 
-      ctx.body = res;
+      // Save transaction details to Strapi's `orders` collection
+      const newOrder = await strapi.entityService.create("api::order.order", {
+        data: {
+          transactionId: razorpayPaymentId,
+          orderId,
+          gig: gigId,
+          buyer: buyerId,
+          seller: sellerId,
+          amount,
+          status: "pending requirements",
+          gateway: "razorpay",
+          startedAt: new Date(),
+        },
+      });
+
+      console.log("Order saved:", newOrder);
+
+      return ctx.send({
+        message: "Payment verified successfully",
+        isOk: true,
+        order: newOrder,
+      });
     } catch (error) {
-      ctx.internalServerError = error;
+      console.error("Error verifying payment:", error);
+      return ctx.throw(500, "Internal Server Error");
     }
+    // try {
+
+    //   console.log(
+    //     "orderId:",
+    //     orderId,
+    //     "razorpayPaymentId:",
+    //     razorpayPaymentId,
+    //     "razorpaySignature:",
+    //     razorpaySignature
+    //   );
+
+    //   // Validate required fields
+    //   if (!orderId || !razorpayPaymentId || !razorpaySignature) {
+    //     return ctx.badRequest("Missing required fields.");
+    //   }
+
+    //   // Retrieve the Razorpay secret from environment variables
+    //   const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    //   if (!keySecret) {
+    //     return ctx.internalServerError("Razorpay secret is not configured.");
+    //   }
+
+    //   // Generate the expected signature
+    //   const signature = crypto
+    //     .createHmac("sha256", keySecret)
+    //     .update(`${orderId}|${razorpayPaymentId}`)
+    //     .digest("hex");
+
+    //   // Compare the generated signature with the one provided in the request
+    //   if (signature !== razorpaySignature) {
+    //     return ctx.badRequest({
+    //       message: "Payment verification failed",
+    //       isOk: false,
+    //     });
+    //   }
+
+    //   // TODO: Place any additional logic here (e.g., updating the order status in your database)
+
+    //   return ctx.send({
+    //     message: "Payment verified successfully",
+    //     isOk: true,
+    //   });
+    // } catch (error) {
+    //   ctx.throw(500, error);
+    // }
   },
   verifyStripeOrder: async (ctx) => {
     try {
@@ -230,7 +458,7 @@ module.exports = createCoreController("api::order.order", ({ strapi }) => ({
             ...(status != "all" ? [{ status }] : []),
           ],
         },
-        fields: ["amount", "status", "requirements", "orderId"],
+        fields: ["amount", "status", "requirements", "orderId", "order_type"],
         populate: {
           gig: {
             fields: [

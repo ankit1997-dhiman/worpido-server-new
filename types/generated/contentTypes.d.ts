@@ -1352,6 +1352,7 @@ export interface ApiOrderOrder extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+    order_type: Attribute.Enumeration<['seller', 'buyer']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1446,6 +1447,38 @@ export interface ApiOrderUpdateOrderUpdate extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::order-update.order-update',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiPaymentPayment extends Schema.CollectionType {
+  collectionName: 'payments';
+  info: {
+    singularName: 'payment';
+    pluralName: 'payments';
+    displayName: 'Payment';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    razorpay_order_id: Attribute.String;
+    razorpay_payment_id: Attribute.String;
+    razorpay_signature: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::payment.payment',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::payment.payment',
       'oneToOne',
       'admin::user'
     > &
@@ -1804,6 +1837,7 @@ declare module '@strapi/types' {
       'api::order.order': ApiOrderOrder;
       'api::order-note.order-note': ApiOrderNoteOrderNote;
       'api::order-update.order-update': ApiOrderUpdateOrderUpdate;
+      'api::payment.payment': ApiPaymentPayment;
       'api::review.review': ApiReviewReview;
       'api::service.service': ApiServiceService;
       'api::service-attribute.service-attribute': ApiServiceAttributeServiceAttribute;

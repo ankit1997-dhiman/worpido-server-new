@@ -106,15 +106,17 @@ module.exports = createCoreController("api::message.message", ({ strapi }) => ({
 
       ctx.body = message;
     } catch (error) {
+      console.log(error);
       ctx.internalServerError = error;
     }
   },
+
   typingStatus: async (ctx) => {
     const { isTyping, receiver, sender } = ctx.request.body;
     await pusher.trigger(receiver, "is-typing", {
       typing: isTyping,
       sender: sender,
-      receiver: receiver
+      receiver: receiver,
     });
     ctx.body = "OK";
   },

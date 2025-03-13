@@ -19,6 +19,15 @@ module.exports = {
       },
     },
     {
+      method: "POST",
+      path: "/verify-razorpay-order",
+      handler: "order.verifyRazorpayOrder",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
+    {
       method: "GET",
       path: "/verify-order",
       handler: "order.verifyStripeOrder",
@@ -27,6 +36,7 @@ module.exports = {
         middlewares: [],
       },
     },
+
     {
       method: "GET",
       path: "/orders/info/:id",
