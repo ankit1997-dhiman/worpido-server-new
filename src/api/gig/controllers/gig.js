@@ -463,7 +463,7 @@ module.exports = createCoreController("api::gig.gig", ({ strapi }) => ({
   myGigs: async (ctx) => {
     try {
       const { user } = ctx.state;
-      const { status } = ctx.query;
+      const { status, category, subcategory } = ctx.query;
 
       if (!user) {
         ctx.unauthorized("You are not allowed to access this resource");
@@ -495,6 +495,8 @@ module.exports = createCoreController("api::gig.gig", ({ strapi }) => ({
               },
             },
             ...(status != "all" ? [{ status }] : []),
+            ...(category ? [{ category: { title: { $eqi: category } } }] : []), // Filter by category
+            ...(subcategory ? [{ subCategory: { title: { $eqi: subcategory } } }] : []),
           ],
         },
         populate: {
@@ -503,6 +505,12 @@ module.exports = createCoreController("api::gig.gig", ({ strapi }) => ({
           },
           banners: {
             fields: ["url"],
+          },
+          category: {
+          fields: ["id", 'title']
+          },
+          subCategory: {
+          fields: ["id", 'title']
           },
           seller: {
             fields: ["id"],
@@ -520,6 +528,8 @@ module.exports = createCoreController("api::gig.gig", ({ strapi }) => ({
         orders: gig?.orders?.length,
         ...(gig?.banners?.length && { banner: gig?.banners[0]?.url }),
         currency: gig?.seller?.currency?.symbol,
+        category: gig?.category, // Include category in the response
+        subCategory: gig?.subCategory
       }));
 
       ctx.body = gigs;
