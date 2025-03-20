@@ -44,7 +44,7 @@ module.exports = createCoreService("api::order.order", ({ strapi }) => ({
           gateway: "stripe",
           type: metadata?.type,
           orderId: newUUID,
-          amount: `${currency} ${Number(amount)/100}`
+          amount: `${currency} ${Number(amount) / 100}`,
         },
       });
       return session;
@@ -54,14 +54,22 @@ module.exports = createCoreService("api::order.order", ({ strapi }) => ({
   },
   getRazorpayLink: async ({ amount, currency, title }) => {
     try {
-      const order = await razorpay.orders.create({
-        amount: amount,
-        currency: currency,
-      });
+      if (!amount || !currency) {
+        throw new Error("Amount and currency are required!");
+      }
 
-      return order;
+      const options = {
+        amount: amount * 100, // Convert to paise
+        currency: currency || "INR",
+        receipt: `receipt_${Date.now()}`,
+        payment_capture: 1,
+      };
+
+      const order = await razorpay.orders.create(options);
+      return { success: true, order };
     } catch (error) {
-      throw error;
+      console.error("Error creating Razorpay order:", error);
+      return { success: false, error: error.message };
     }
   },
   getPaypalLink: async ({ amount, currency, description }) => {

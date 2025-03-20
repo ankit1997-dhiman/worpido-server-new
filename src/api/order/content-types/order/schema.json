@@ -115,6 +115,13 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user"
+    },
+    "order_type": {
+      "type": "enumeration",
+      "enum": [
+        "seller",
+        "buyer"
+      ]
     }
   }
 }
