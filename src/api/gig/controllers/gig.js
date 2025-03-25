@@ -66,7 +66,7 @@ module.exports = createCoreController("api::gig.gig", ({ strapi }) => ({
           ],
           filters: {
             $and: [
-              { status: "active" },
+              // { status: "active" },
               { isActive: true },
               {
                 seller: {
