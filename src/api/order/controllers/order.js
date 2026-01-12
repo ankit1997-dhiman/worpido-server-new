@@ -198,8 +198,14 @@ module.exports = createCoreController("api::order.order", ({ strapi }) => ({
       ctx.internalServerError("Internal Server Error");
     }
   },
-  verifyRazorpayOrder: async (ctx) => {
+  verifyRazorpayOrder: async (ctx, next) => {
+    console.log("hgjhgjhgjhgjh", ctx.request.body);
+
+    // ctx.body = { success: true };
     try {
+      // Parse request body (Ensure Strapi is parsing it correctly)
+      const parsedBody = JSON.parse(ctx.request.body || "{}");
+
       const {
         orderId,
         razorpayPaymentId,
@@ -208,34 +214,39 @@ module.exports = createCoreController("api::order.order", ({ strapi }) => ({
         buyerId,
         gigId,
         sellerId,
-      } = ctx.request.body;
+      } = parsedBody;
+      // const { orderId, razorpayPaymentId, razorpaySignature, amount, buyerId, gigId, sellerId } =
+      //   ctx.request.body;
 
-      /* ---------------- Validation ---------------- */
+      console.log(
+        "Order details:",
+        orderId,
+        razorpayPaymentId,
+        razorpaySignature,
+        amount,
+        buyerId,
+        gigId,
+        sellerId
+      );
 
-      if (
-        !orderId ||
-        !razorpayPaymentId ||
-        !razorpaySignature ||
-        !buyerId ||
-        !gigId ||
-        !sellerId
-      ) {
-        return ctx.badRequest("Missing required fields");
+      // Validate required fields
+      if (!orderId || !razorpayPaymentId || !razorpaySignature) {
+        return ctx.badRequest("Missing required fields.");
       }
 
-      /* ---------------- Verify Signature ---------------- */
-
+      // Retrieve the Razorpay secret from environment variables
       const keySecret = process.env.RAZORPAY_KEY_SECRET;
-
       if (!keySecret) {
-        return ctx.internalServerError("Razorpay secret not configured");
+        return ctx.internalServerError("Razorpay secret is not configured.");
       }
 
+      // Generate the expected signature
       const expectedSignature = crypto
         .createHmac("sha256", keySecret)
         .update(`${orderId}|${razorpayPaymentId}`)
         .digest("hex");
 
+      // Compare the generated signature with the one provided in the request
       if (expectedSignature !== razorpaySignature) {
         return ctx.badRequest({
           message: "Payment verification failed",
@@ -243,68 +254,32 @@ module.exports = createCoreController("api::order.order", ({ strapi }) => ({
         });
       }
 
-      /* ---------------- DB TRANSACTION ---------------- */
-
-      const result = await strapi.db.transaction(async ({ trx }) => {
-        /* 1️⃣ Create Order */
-        const order = await strapi.entityService.create(
-          "api::order.order",
-          {
-            data: {
-              transactionId: razorpayPaymentId, 
-              orderId,
-              gig: gigId,
-              buyer: buyerId,
-              seller: sellerId,
-              amount,
-              status: "pending requirements",
-              startedAt: new Date(),
-            },
-          },
-          { trx }
-        );
-
-        /* 2️⃣ Create Payment */
-        const payment = await strapi.entityService.create(
-          "api::payment.payment",
-          {
-            data: {
-              razorpay_payment_id: razorpayPaymentId,
-              razorpay_signature: razorpaySignature,
-              razorpay_order_id: order.id,
-            },
-          },
-          { trx }
-        );
-
-        /* 3️⃣ Link Payment to Order */
-        await strapi.entityService.update(
-          "api::order.order",
-          order.id,
-          {
-            data: {
-              payment: payment.id,
-            },
-          },
-          { trx }
-        );
-
-        return { order, payment };
+      // Save transaction details to Strapi's `orders` collection
+      const newOrder = await strapi.entityService.create("api::order.order", {
+        data: {
+          transactionId: razorpayPaymentId,
+          orderId,
+          gig: gigId,
+          buyer: buyerId,
+          seller: sellerId,
+          amount,
+          status: "pending requirements",
+          gateway: "razorpay",
+          startedAt: new Date(),
+        },
       });
 
-      /* ---------------- Response ---------------- */
+      console.log("Order saved:", newOrder);
 
-      ctx.body = {
-        success: true,
-        message: "Payment verified and order created",
-        orderId: result.order.id,
-        paymentId: result.payment.id,
-      };
+      return ctx.send({
+        message: "Payment verified successfully",
+        isOk: true,
+        order: newOrder,
+      });
     } catch (error) {
-      console.error("Razorpay verification error:", error);
-      ctx.internalServerError("Something went wrong");
+      console.error("Error verifying payment:", error);
+      return ctx.throw(500, "Internal Server Error");
     }
-   
     // try {
 
     //   console.log(
