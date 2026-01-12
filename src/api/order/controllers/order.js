@@ -304,7 +304,7 @@ module.exports = createCoreController("api::order.order", ({ strapi }) => ({
       console.error("Razorpay verification error:", error);
       ctx.internalServerError("Something went wrong");
     }
-  },
+   
     // try {
 
     //   console.log(
